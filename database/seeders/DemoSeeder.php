@@ -53,7 +53,7 @@ class DemoSeeder extends Seeder
         config(['queue.default' => 'sync']);
 
         $user = User::updateOrCreate(['email' => 'demo@researchhub.com'], [
-            'name' => 'Ama Mensah',
+            'name' => 'Ustarz Baba',
             'password' => Hash::make('password'),
             'role' => 'student',
             'timezone' => 'Africa/Accra',
