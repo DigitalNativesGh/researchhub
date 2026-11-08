@@ -52,7 +52,7 @@ class DemoSeeder extends Seeder
     {
         config(['queue.default' => 'sync']);
 
-        $user = User::updateOrCreate(['email' => 'demo@researchhub.test'], [
+        $user = User::updateOrCreate(['email' => 'demo@researchhub.com'], [
             'name' => 'Ama Mensah',
             'password' => Hash::make('password'),
             'role' => 'student',
@@ -69,7 +69,7 @@ class DemoSeeder extends Seeder
             $old->delete();
         }
 
-        $this->admin = User::updateOrCreate(['email' => 'admin@researchhub.test'], [
+        $this->admin = User::updateOrCreate(['email' => 'admin@researchhub.com'], [
             'name' => 'Platform Admin',
             'password' => Hash::make('password'),
             'role' => 'academic',
