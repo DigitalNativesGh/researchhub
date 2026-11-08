@@ -112,7 +112,7 @@ it('saves platform settings that take effect', function () {
     $this->actingAs($this->admin)->put(route('admin.settings.update'), [
         'announcement' => 'Maintenance tonight at 22:00', 'announcement_level' => 'warning',
         'title_suggestions_per_hour' => 3, 'paper_max_count' => 25, 'min_sources' => 2,
-        'price_undergraduate' => 300, 'price_mba' => 600, 'price_mphil' => 800, 'price_phd' => 1500,
+        'price_undergraduate' => 1500, 'price_mba' => 4000, 'price_mphil' => 7000, 'price_phd' => 15000,
     ])->assertSessionHasNoErrors();
 
     expect(Setting::get('registration_open'))->toBeFalse()
