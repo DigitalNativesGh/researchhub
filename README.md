@@ -254,8 +254,8 @@ php artisan migrate:fresh --seed     # erases the database. Use a scratch databa
 
 | Account | Email | Password |
 |---|---|---|
-| Researcher | `demo@researchhub.test` | `password` |
-| Administrator | `admin@researchhub.test` | `password` |
+| Researcher | `demo@researchhub.com` | `password` |
+| Administrator | `admin@researchhub.com` | `password` |
 
 The researcher has one project at every status (IDs on a fresh database):
 

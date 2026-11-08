@@ -174,7 +174,7 @@ it('shows payments to administrators and re-checks pending ones', function () {
 
 it('explains that Paystack needs a deliverable email before trying to pay', function () {
     Http::fake();
-    $user = User::factory()->create(['email' => 'admin@researchhub.test']);
+    $user = User::factory()->create(['email' => 'admin@researchhub.com']);
     $this->actingAs($user)->withSession(['wizard' => ['degree_level' => 'mba']]);
 
     $this->get(route('projects.payment'))->assertOk()->assertSee('cannot receive receipts');
@@ -197,5 +197,5 @@ it('recognises which addresses Paystack accepts', function (string $email, bool 
     expect(PaymentController::payableEmail($email))->toBe($ok);
 })->with([
     ['ops@efosusu.com', true], ['ama.mensah@ug.edu.gh', true],
-    ['admin@researchhub.test', false], ['someone@example.com', false], ['me@localhost', false], ['x@site.local', false],
+    ['admin@researchhub.com', false], ['someone@example.com', false], ['me@localhost', false], ['x@site.local', false],
 ]);

@@ -29,8 +29,8 @@ use PhpOffice\PhpWord\Settings;
  * transcripts are invented and labelled as such.
  *
  *   php artisan db:seed --class=DemoSeeder
- *   → researcher: demo@researchhub.test / password
- *   → admin:      admin@researchhub.test / password (work queue at /admin/queue)
+ *   → researcher: demo@researchhub.com / password
+ *   → admin:      admin@researchhub.com / password (work queue at /admin/queue)
  */
 class DemoSeeder extends Seeder
 {
@@ -81,8 +81,8 @@ class DemoSeeder extends Seeder
 
         $this->stages($user);
 
-        $this->command?->info('Researcher: demo@researchhub.test / password');
-        $this->command?->info('Admin:      admin@researchhub.test / password (work queue at /admin/queue)');
+        $this->command?->info('Researcher: demo@researchhub.com / password');
+        $this->command?->info('Admin:      admin@researchhub.com / password (work queue at /admin/queue)');
         $this->command?->table(['Project', 'Status'], $user->projects()->orderBy('id')->get()->map(fn ($p) => [$p->reference().' '.Str::limit($p->title, 50), $p->workflow_status->label()])->all());
     }
 
