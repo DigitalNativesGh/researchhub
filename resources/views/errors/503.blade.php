@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '503')
+@section('heading', 'Down for maintenance')
+@section('icon', 'construction')
+@section('icon_class', 'bg-error-container/50 text-error')
+@section('text', 'ResearchHub is being updated and will be back shortly. Your projects and files are safe.')

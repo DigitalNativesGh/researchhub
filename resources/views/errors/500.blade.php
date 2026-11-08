@@ -1,0 +1,6 @@
+@extends('errors.layout')
+@section('code', '500')
+@section('heading', 'Something went wrong')
+@section('icon', 'error')
+@section('icon_class', 'bg-error-container/50 text-error')
+@section('text', 'An unexpected error occurred on our side. Your work is saved. Please try again, and contact support if it keeps happening.')

@@ -1,0 +1,19 @@
+# Supporting services for local development: PostgreSQL and Redis.
+# The Laravel app itself runs on your machine (php artisan serve + php artisan horizon).
+#   docker compose up -d
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: researchhub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+
+volumes:
+  pgdata:

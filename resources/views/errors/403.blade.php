@@ -1,0 +1,5 @@
+@extends('errors.layout')
+@section('code', '403')
+@section('heading', "You don't have access")
+@section('icon', 'lock')
+@section('text', 'This project belongs to another account. Only the project owner can view its sources, data and documents.')
