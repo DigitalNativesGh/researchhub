@@ -75,22 +75,28 @@ class ProjectController extends Controller
     {
         return view('projects.level', [
             'selected' => old('degree_level', $request->session()->get('wizard.degree_level')),
+            'dataCollection' => (bool) old('data_collection', $request->session()->get('wizard.data_collection', false)),
             'prices' => collect(DegreeLevel::cases())->mapWithKeys(fn ($l) => [$l->value => Payment::priceFor($l)]),
-            'credits' => $request->user()->payments()->unused()->pluck('degree_level')->map->value->unique()->values()->all(),
+            'dataCollectionPrices' => collect(DegreeLevel::cases())->mapWithKeys(fn ($l) => [$l->value => Payment::dataCollectionPriceFor($l)]),
+            // "level" for a credit without data collection, "level+data" for one with it.
+            'credits' => $request->user()->payments()->unused()->get(['degree_level', 'data_collection'])
+                ->map(fn ($p) => $p->degree_level->value.($p->data_collection ? '+data' : ''))->unique()->values()->all(),
         ]);
     }
 
     public function storeLevel(Request $request): RedirectResponse
     {
         $data = $request->validate(
-            ['degree_level' => ['required', Rule::enum(DegreeLevel::class)]],
+            ['degree_level' => ['required', Rule::enum(DegreeLevel::class)], 'data_collection' => ['nullable', 'boolean']],
             ['degree_level.required' => 'Select the type of research you are working on.'],
         );
+        $dataCollection = (bool) ($data['data_collection'] ?? false);
 
         $request->session()->put('wizard.degree_level', $data['degree_level']);
+        $request->session()->put('wizard.data_collection', $dataCollection);
 
-        // Step 2 is payment, unless this type is already paid for (or free).
-        return $request->user()->canStartProject(DegreeLevel::from($data['degree_level']))
+        // Step 2 is payment, unless this type (with or without data collection) is already paid for (or free).
+        return $request->user()->canStartProject(DegreeLevel::from($data['degree_level']), $dataCollection)
             ? redirect()->route('projects.create')
             : redirect()->route('projects.payment');
     }
@@ -104,12 +110,14 @@ class ProjectController extends Controller
         if (! $level) {
             return redirect()->route('projects.new');
         }
-        if (! $request->user()->canStartProject($level)) {
+        $dataCollection = (bool) ($wizard['data_collection'] ?? false);
+        if (! $request->user()->canStartProject($level, $dataCollection)) {
             return redirect()->route('projects.payment');
         }
 
         return view('projects.create', [
             'disciplines' => self::DISCIPLINES,
+            'dataCollection' => $dataCollection,
             'values' => [
                 'degree_level' => old('degree_level', $wizard['degree_level']),
                 'title' => old('title', $wizard['title'] ?? ''),
@@ -134,15 +142,18 @@ class ProjectController extends Controller
         $data['title_source'] = $this->titleSource($data['title'], $request->session()->get('wizard.suggested_title'));
         $user = $request->user();
         $level = DegreeLevel::from($data['degree_level']);
+        // Chosen with the research type in step 1 and paid for in step 2; not editable on this form.
+        $dataCollection = (bool) $request->session()->get('wizard.data_collection', false);
 
-        $project = DB::transaction(function () use ($user, $level, $data) {
-            $credit = $user->payments()->unused()->where('degree_level', $level->value)->oldest('id')->lockForUpdate()->first();
+        $project = DB::transaction(function () use ($user, $level, $data, $dataCollection) {
+            $credit = $user->payments()->unused()->where('degree_level', $level->value)->where('data_collection', $dataCollection)
+                ->oldest('id')->lockForUpdate()->first();
 
-            if (! $credit && Payment::priceFor($level) > 0) {
+            if (! $credit && Payment::totalFor($level, $dataCollection) > 0) {
                 return null;
             }
 
-            $project = $user->projects()->create($data + ['status' => 'draft', 'phase' => 1]);
+            $project = $user->projects()->create($data + ['data_collection' => $dataCollection, 'status' => 'draft', 'phase' => 1]);
             $credit?->forceFill(['project_id' => $project->id, 'consumed_at' => now()])->save();
 
             return $project;
@@ -150,8 +161,9 @@ class ProjectController extends Controller
 
         if (! $project) {
             $request->session()->put('wizard.degree_level', $level->value);
+            $request->session()->put('wizard.data_collection', $dataCollection);
 
-            return redirect()->route('projects.payment')->with('error', "Pay for the {$level->label()} before creating the project.");
+            return redirect()->route('projects.payment')->with('error', "Pay for the {$level->label()}".($dataCollection ? ' with data collection' : '').' before creating the project.');
         }
 
         $project->record('created', 'Project created', null, 'note_add');

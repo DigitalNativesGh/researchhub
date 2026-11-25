@@ -56,7 +56,8 @@
 <div class="flex items-start justify-between gap-3">
 <h3 class="font-headline-sm text-headline-sm text-primary mb-1">{{ $level->label() }}</h3>
 <div class="text-right shrink-0">
-@if (in_array($level->value, $credits, true))
+@php $paid = array_values(array_intersect([$level->value, $level->value.'+data'], $credits)); @endphp
+@if ($paid)
 <span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded text-[11px] font-bold uppercase tracking-wider whitespace-nowrap"><span class="material-symbols-outlined text-[14px]">verified</span>Paid</span>
 @elseif ($prices[$level->value] > 0)
 <p class="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap">{{ \App\Models\Payment::format($prices[$level->value]) }}</p>
@@ -66,15 +67,30 @@
 </div>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-3">{{ $level->description() }}</p>
+@if ($dataCollectionPrices[$level->value] > 0)
+<p class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant mb-3"><span class="material-symbols-outlined text-[16px]">add_circle</span>Data collection: {{ \App\Models\Payment::format($dataCollectionPrices[$level->value]) }} extra, optional</p>
+@endif
 <div class="flex flex-wrap items-center justify-between gap-2">
 <span class="inline-block px-2 py-1 bg-surface-container-high rounded text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Typical length · {{ $level->typicalRange() }}</span>
-<span class="flex items-center gap-1 text-[11px] text-on-surface-variant">{{ in_array($level->value, $credits, true) ? 'Ready to use' : 'One-off, per project' }}<span class="check-mark opacity-0 transition-opacity material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span></span>
+<span class="flex items-center gap-1 text-[11px] text-on-surface-variant">{{ $paid ? ($paid === [$level->value.'+data'] ? 'Ready to use, with data collection' : 'Ready to use') : 'One-off, per project' }}<span class="check-mark opacity-0 transition-opacity material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span></span>
 </div>
 </div>
 </div>
 </label>
 @endforeach
 </div>
+<!-- Optional add-on: the team collects the data for the researcher -->
+<label class="max-w-4xl mx-auto mt-gutter flex items-start gap-4 p-6 bg-white border border-outline-variant rounded-lg cursor-pointer hover:border-primary transition-colors has-[:checked]:border-primary has-[:checked]:bg-surface-container-low">
+<input type="hidden" name="data_collection" value="0"/>
+<input @checked($dataCollection) class="mt-1 w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary/20" id="data_collection" name="data_collection" type="checkbox" value="1"/>
+<span class="flex-1">
+<span class="flex flex-wrap items-center justify-between gap-2">
+<span class="font-headline-sm text-headline-sm text-primary flex items-center gap-2"><span class="material-symbols-outlined">fact_check</span>I need data collection done on my behalf</span>
+<span class="font-label-md text-label-md text-primary font-bold whitespace-nowrap" id="data-collection-price"></span>
+</span>
+<span class="block font-body-sm text-body-sm text-on-surface-variant mt-1">Optional. Our team administers your questionnaire or interviews and collects the data for you, instead of you uploading it yourself. The cost is added to the price of the research type.</span>
+</span>
+</label>
 <div class="max-w-4xl mx-auto mt-stack-lg border-t border-outline-variant pt-gutter flex items-center justify-between">
 <a class="px-6 py-3 font-label-md text-label-md text-primary hover:bg-surface-container-low transition-colors rounded-lg" href="{{ route('projects.index') }}">Cancel</a>
 <button class="bg-primary text-on-primary px-8 py-4 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-all flex items-center gap-2 shadow-lg shadow-primary/10" type="submit">
@@ -83,6 +99,18 @@
 </button>
 </div>
 </form>
+<script>
+  (() => {
+    const prices = @json($dataCollectionPrices->map(fn ($p) => $p > 0 ? '+ '.\App\Models\Payment::format($p) : 'Free'));
+    const label = document.getElementById('data-collection-price');
+    const update = () => {
+      const chosen = document.querySelector('input[name="degree_level"]:checked');
+      label.textContent = chosen ? prices[chosen.value] : 'Price depends on the research type';
+    };
+    document.querySelectorAll('input[name="degree_level"]').forEach((r) => r.addEventListener('change', update));
+    update();
+  })();
+</script>
 </main>
 </body>
 @endsection

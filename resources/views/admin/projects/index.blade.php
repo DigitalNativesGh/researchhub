@@ -44,7 +44,7 @@
 <p class="text-[12px] text-on-surface-variant">{{ $p->reference() }} · {{ $p->discipline }}</p>
 </td>
 <td class="py-3 px-4">@if ($p->user)<a class="hover:underline" href="{{ route('admin.users.show', $p->user) }}">{{ $p->user->name }}</a><p class="text-[12px] text-on-surface-variant">{{ $p->user->email }}</p>@endif</td>
-<td class="py-3 px-4 whitespace-nowrap">{{ $p->degree_level->shortLabel() }}<p class="text-[12px] text-on-surface-variant">{{ $p->research_type->label() }}</p></td>
+<td class="py-3 px-4 whitespace-nowrap">{{ $p->degree_level->shortLabel() }}<p class="text-[12px] text-on-surface-variant">{{ $p->research_type->label() }}{{ $p->data_collection ? " · Data collection" : "" }}</p></td>
 <td class="py-3 px-4 tabular-nums">{{ $p->papers_count }}</td>
 <td class="py-3 px-4 tabular-nums">${{ number_format((float) $p->ai_cost, 2) }}</td>
 <td class="py-3 px-4 text-on-surface-variant whitespace-nowrap">{{ $p->updated_at->diffForHumans() }}</td>

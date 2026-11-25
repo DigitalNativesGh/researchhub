@@ -57,15 +57,16 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /** A successful payment for this research type that has not been used for a project yet. */
-    public function paymentCreditFor(DegreeLevel $level): ?Payment
+    /** With or without the data collection add-on: a credit only covers the option it was paid for. */
+    public function paymentCreditFor(DegreeLevel $level, bool $dataCollection = false): ?Payment
     {
-        return $this->payments()->unused()->where('degree_level', $level->value)->oldest('id')->first();
+        return $this->payments()->unused()->where('degree_level', $level->value)->where('data_collection', $dataCollection)->oldest('id')->first();
     }
 
     /** Paid for (or free at the current price), so the details step of the wizard is open. */
-    public function canStartProject(DegreeLevel $level): bool
+    public function canStartProject(DegreeLevel $level, bool $dataCollection = false): bool
     {
-        return Payment::priceFor($level) <= 0 || $this->paymentCreditFor($level) !== null;
+        return Payment::totalFor($level, $dataCollection) <= 0 || $this->paymentCreditFor($level, $dataCollection) !== null;
     }
 
     public function aiCalls(): HasMany

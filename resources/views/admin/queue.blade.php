@@ -80,7 +80,7 @@
 <p class="text-[12px] text-on-surface-variant">{{ $p->reference() }} · {{ $p->discipline }}</p>
 </td>
 <td class="py-3 px-4">{{ $p->user?->name ?? '—' }}<p class="text-[12px] text-on-surface-variant">{{ $p->user?->email }}</p></td>
-<td class="py-3 px-4 whitespace-nowrap">{{ $p->degree_level->shortLabel() }}</td>
+<td class="py-3 px-4 whitespace-nowrap">{{ $p->degree_level->shortLabel() }}@if ($p->data_collection)<p class="text-[12px] text-on-surface-variant">+ Data collection</p>@endif</td>
 <td class="py-3 px-4"><x-badge :kind="$p->workflow_status->badge()">{{ $p->workflow_status->label() }}</x-badge></td>
 <td class="py-3 px-4 whitespace-nowrap {{ $hours >= 72 ? 'text-error font-semibold' : ($hours >= 24 ? 'text-on-surface' : 'text-on-surface-variant') }}" title="{{ $p->workflow_changed_at?->format('j M Y H:i') }}">{{ $p->workflow_changed_at?->diffForHumans(null, true) ?? '—' }}</td>
 <td class="py-3 px-4 whitespace-nowrap">@if ($daysLeft === null)<span class="text-on-surface-variant">—</span>@else<span class="{{ $daysLeft < 0 ? 'text-error font-semibold' : ($daysLeft <= 7 ? 'text-on-surface font-semibold' : 'text-on-surface-variant') }}">{{ $p->deadline->format('j M') }}</span><p class="text-[12px] {{ $daysLeft < 0 ? 'text-error' : 'text-on-surface-variant' }}">{{ $daysLeft < 0 ? abs($daysLeft).' days overdue' : ($daysLeft === 0 ? 'today' : $daysLeft.' days left') }}</p>@endif</td>

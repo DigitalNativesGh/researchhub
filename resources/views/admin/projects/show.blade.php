@@ -50,6 +50,7 @@ Researcher: @if ($project->user)<a class="text-primary hover:underline" href="{{
 <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 font-body-sm text-body-sm">
 @foreach ([
     'Degree level' => $project->degree_level->label(),
+    'Data collection' => $project->data_collection ? 'Yes, our team collects the data (paid add-on)' : 'No, the researcher uploads their data',
     'Research approach' => $project->research_type->label(),
     'Field of study' => $project->discipline,
     'Institution' => $project->institution ?: '—',

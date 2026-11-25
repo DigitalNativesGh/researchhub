@@ -13,7 +13,7 @@ class Payment extends Model
     public const SUCCESS = 'success';
 
     protected $fillable = [
-        'user_id', 'project_id', 'degree_level', 'amount', 'currency', 'reference', 'status', 'channel', 'card_type',
+        'user_id', 'project_id', 'degree_level', 'data_collection', 'amount', 'currency', 'reference', 'status', 'channel', 'card_type',
         'last4', 'gateway_response', 'paystack_id', 'paid_at', 'consumed_at',
     ];
 
@@ -21,6 +21,7 @@ class Payment extends Model
     {
         return [
             'degree_level' => DegreeLevel::class,
+            'data_collection' => 'boolean',
             'amount' => 'integer',
             'paystack_id' => 'integer',
             'paid_at' => 'datetime',
@@ -42,6 +43,18 @@ class Payment extends Model
     public static function priceFor(DegreeLevel $level): float
     {
         return (float) config("researchhub.payments.prices.{$level->value}", 0);
+    }
+
+    /** Price of the optional data collection add-on for a research type. */
+    public static function dataCollectionPriceFor(DegreeLevel $level): float
+    {
+        return (float) config("researchhub.payments.data_collection.{$level->value}", 0);
+    }
+
+    /** What the researcher pays to start a project: the research type, plus data collection if chosen. */
+    public static function totalFor(DegreeLevel $level, bool $dataCollection = false): float
+    {
+        return self::priceFor($level) + ($dataCollection ? self::dataCollectionPriceFor($level) : 0);
     }
 
     public static function currency(): string

@@ -52,6 +52,7 @@
 @foreach ([
     ['Project Title', $project->title, false],
     ['Degree Level', $project->degree_level->label(), true],
+    ['Data Collection', $project->data_collection ? 'Done by our team' : 'You upload your data', false],
     ['Field of Study', $project->discipline, false],
     ['Research Approach', $project->research_type->label(), false],
     ['Citation Style', $project->citation_style->label(), false],

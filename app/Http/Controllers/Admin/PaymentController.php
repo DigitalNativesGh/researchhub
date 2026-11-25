@@ -61,9 +61,9 @@ class PaymentController extends Controller
 
         return response()->streamDownload(function () use ($query) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Date', 'Reference', 'User', 'Email', 'Research type', 'Amount', 'Currency', 'Status', 'Method', 'Paid at', 'Project'], escape: '');
+            fputcsv($out, ['Date', 'Reference', 'User', 'Email', 'Research type', 'Data collection', 'Amount', 'Currency', 'Status', 'Method', 'Paid at', 'Project'], escape: '');
             foreach ($query->with(['user:id,name,email', 'project:id,title'])->orderBy('id')->cursor() as $p) {
-                fputcsv($out, [$p->created_at, $p->reference, $p->user?->name, $p->user?->email, $p->degree_level->label(), number_format($p->amountMajor(), 2, '.', ''), $p->currency, $p->status, $p->methodLabel(), $p->paid_at, $p->project?->title], escape: '');
+                fputcsv($out, [$p->created_at, $p->reference, $p->user?->name, $p->user?->email, $p->degree_level->label(), $p->data_collection ? 'Yes' : 'No', number_format($p->amountMajor(), 2, '.', ''), $p->currency, $p->status, $p->methodLabel(), $p->paid_at, $p->project?->title], escape: '');
             }
             fclose($out);
         }, 'payments.csv', ['Content-Type' => 'text/csv']);

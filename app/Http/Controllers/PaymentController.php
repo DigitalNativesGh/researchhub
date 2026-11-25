@@ -25,13 +25,17 @@ class PaymentController extends Controller
         if (! $level) {
             return redirect()->route('projects.new');
         }
-        if ($request->user()->canStartProject($level)) {
+        $dataCollection = $this->dataCollection($request);
+        if ($request->user()->canStartProject($level, $dataCollection)) {
             return redirect()->route('projects.create');
         }
 
         return view('projects.payment', [
             'level' => $level,
             'price' => Payment::priceFor($level),
+            'dataCollection' => $dataCollection,
+            'dataCollectionPrice' => Payment::dataCollectionPriceFor($level),
+            'total' => Payment::totalFor($level, $dataCollection),
             'currency' => Payment::currency(),
             'configured' => $paystack->configured(),
             'channels' => config('services.paystack.channels'),
@@ -46,7 +50,8 @@ class PaymentController extends Controller
         }
 
         $user = $request->user();
-        if ($user->canStartProject($level)) {
+        $dataCollection = $this->dataCollection($request);
+        if ($user->canStartProject($level, $dataCollection)) {
             return redirect()->route('projects.create');
         }
 
@@ -57,7 +62,8 @@ class PaymentController extends Controller
 
         $payment = $user->payments()->create([
             'degree_level' => $level,
-            'amount' => (int) round(Payment::priceFor($level) * 100),
+            'data_collection' => $dataCollection,
+            'amount' => (int) round(Payment::totalFor($level, $dataCollection) * 100),
             'currency' => Payment::currency(),
             'reference' => Payment::newReference(),
             'status' => 'pending',
@@ -66,8 +72,10 @@ class PaymentController extends Controller
         try {
             $url = $paystack->initialize($payment, $user->email, route('payments.callback'), [
                 'degree_level' => $level->value,
+                'data_collection' => $dataCollection,
                 'custom_fields' => [
                     ['display_name' => 'Research type', 'variable_name' => 'research_type', 'value' => $level->label()],
+                    ['display_name' => 'Data collection', 'variable_name' => 'data_collection', 'value' => $dataCollection ? 'Yes' : 'No'],
                     ['display_name' => 'Customer', 'variable_name' => 'customer_name', 'value' => $user->name],
                 ],
             ]);
@@ -97,6 +105,7 @@ class PaymentController extends Controller
         }
 
         $request->session()->put('wizard.degree_level', $payment->degree_level->value);
+        $request->session()->put('wizard.data_collection', $payment->data_collection);
 
         if (! $paid) {
             return redirect()->route('projects.payment')->with('error', 'The payment was not completed'.($payment->gateway_response ? ' ('.$payment->gateway_response.')' : '').'. You have not been charged; please try again.');
@@ -135,6 +144,11 @@ class PaymentController extends Controller
             && str_contains($domain, '.')
             && ! preg_match('/(^|\.)(test|example|invalid|localhost|local)$/', $domain)
             && ! in_array($domain, ['example.com', 'example.net', 'example.org'], true);
+    }
+
+    private function dataCollection(Request $request): bool
+    {
+        return (bool) $request->session()->get('wizard.data_collection', false);
     }
 
     private function level(Request $request): ?DegreeLevel

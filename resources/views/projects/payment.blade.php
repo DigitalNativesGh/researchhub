@@ -50,12 +50,25 @@
 <ul class="py-5 space-y-2 font-body-sm text-body-sm text-on-surface-variant border-b border-outline-variant">
 <li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>One research project ({{ $level->typicalRange() }})</li>
 <li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>Chapters 1–3 and your data collection instrument</li>
-<li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>The complete thesis once you upload your data</li>
+<li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>{{ $dataCollection ? 'Data collection by our team, then the complete thesis' : 'The complete thesis once you upload your data' }}</li>
 <li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>Word or PDF downloads, with progress tracking at every stage</li>
 </ul>
+<dl class="py-5 space-y-2 font-body-sm text-body-sm border-b border-outline-variant">
+<div class="flex justify-between gap-4"><dt class="text-on-surface-variant">{{ $level->label() }}</dt><dd class="text-on-surface">{{ \App\Models\Payment::format($price, $currency) }}</dd></div>
+@if ($dataCollection)
+<div class="flex justify-between gap-4"><dt class="text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[18px] text-primary">fact_check</span>Data collection on your behalf</dt><dd class="text-on-surface">{{ $dataCollectionPrice > 0 ? \App\Models\Payment::format($dataCollectionPrice, $currency) : 'Free' }}</dd></div>
+@endif
+</dl>
+<p class="pt-3 font-body-sm text-body-sm text-on-surface-variant">
+@if ($dataCollection)
+Our team will collect your data for you. <a class="text-secondary hover:underline" href="{{ route('projects.new') }}">Remove data collection</a>
+@else
+Need us to collect your data? <a class="text-secondary hover:underline" href="{{ route('projects.new') }}">Add data collection{{ $dataCollectionPrice > 0 ? ' (+'.\App\Models\Payment::format($dataCollectionPrice, $currency).')' : '' }}</a>
+@endif
+</p>
 <div class="pt-5 flex items-end justify-between">
 <span class="font-label-md text-label-md text-on-surface">Total due</span>
-<span class="font-headline-lg text-headline-lg text-primary font-bold">{{ \App\Models\Payment::format($price, $currency) }}</span>
+<span class="font-headline-lg text-headline-lg text-primary font-bold">{{ \App\Models\Payment::format($total, $currency) }}</span>
 </div>
 </section>
 
@@ -96,7 +109,7 @@
 @csrf
 <button class="w-full bg-primary text-on-primary px-8 py-4 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/10 disabled:opacity-60" type="submit">
 <span class="material-symbols-outlined">lock</span>
-<span data-label>Pay {{ \App\Models\Payment::format($price, $currency) }}</span>
+<span data-label>Pay {{ \App\Models\Payment::format($total, $currency) }}</span>
 </button>
 </form>
 @else

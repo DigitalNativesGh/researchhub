@@ -16,7 +16,7 @@
 <p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-bold mb-2">Current prices</p>
 <ul class="space-y-1 font-body-sm text-body-sm">
 @foreach (\App\Enums\DegreeLevel::cases() as $level)
-<li class="flex justify-between gap-2"><span class="text-on-surface-variant">{{ $level->shortLabel() }}</span><span class="text-primary font-semibold">{{ $prices[$level->value] > 0 ? $fmt($prices[$level->value]) : 'Free' }}</span><span class="text-[12px] text-on-surface-variant">{{ $byLevel[$level->value]->payments ?? 0 }} paid</span></li>
+<li class="flex justify-between gap-2"><span class="text-on-surface-variant">{{ $level->shortLabel() }}</span><span class="text-primary font-semibold" title="Data collection add-on">{{ $prices[$level->value] > 0 ? $fmt($prices[$level->value]) : 'Free' }}<span class="text-[12px] text-on-surface-variant font-normal"> +{{ $fmt(\App\Models\Payment::dataCollectionPriceFor($level)) }}</span></span><span class="text-[12px] text-on-surface-variant">{{ $byLevel[$level->value]->payments ?? 0 }} paid</span></li>
 @endforeach
 </ul>
 </div>
@@ -51,7 +51,7 @@
 <tr class="hover:bg-surface-container-low transition-colors">
 <td class="py-3 px-4 text-on-surface-variant whitespace-nowrap">{{ $payment->created_at->format('M j, Y H:i') }}</td>
 <td class="py-3 px-4">@if ($payment->user)<a class="text-primary hover:underline" href="{{ route('admin.users.show', $payment->user) }}">{{ $payment->user->name }}</a><p class="text-[12px] text-on-surface-variant">{{ $payment->user->email }}</p>@endif</td>
-<td class="py-3 px-4 whitespace-nowrap">{{ $payment->degree_level->shortLabel() }}</td>
+<td class="py-3 px-4 whitespace-nowrap">{{ $payment->degree_level->shortLabel() }}@if ($payment->data_collection)<p class="text-[12px] text-on-surface-variant">+ Data collection</p>@endif</td>
 <td class="py-3 px-4 tabular-nums whitespace-nowrap font-semibold">{{ $payment->displayAmount() }}</td>
 <td class="py-3 px-4 whitespace-nowrap">{{ $payment->methodLabel() }}</td>
 <td class="py-3 px-4 font-mono text-[12px]">{{ $payment->reference }}</td>

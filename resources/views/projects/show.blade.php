@@ -104,6 +104,7 @@
 <h3 class="font-label-md text-label-md text-primary">Project details</h3>
 <dl class="font-body-sm text-body-sm space-y-2">
 <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">Research type</dt><dd class="text-on-surface text-right">{{ $project->degree_level->label() }}</dd></div>
+<div class="flex justify-between gap-4"><dt class="text-on-surface-variant">Data collection</dt><dd class="text-on-surface text-right">{{ $project->data_collection ? 'Done by our team' : 'You upload your data' }}</dd></div>
 @if ($project->institution)
 <div class="flex justify-between gap-4"><dt class="text-on-surface-variant">Institution</dt><dd class="text-on-surface text-right">{{ $project->institution }}</dd></div>
 @endif

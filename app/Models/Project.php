@@ -30,7 +30,7 @@ class Project extends Model
     public const TITLE_SOURCES = ['own' => 'Researcher’s own title', 'suggested' => 'AI-suggested title', 'suggested_edited' => 'AI-suggested title, edited by the researcher'];
 
     protected $fillable = [
-        'user_id', 'title', 'title_source', 'description', 'discipline', 'institution', 'degree_level', 'citation_style',
+        'user_id', 'title', 'title_source', 'description', 'discipline', 'institution', 'degree_level', 'data_collection', 'citation_style',
         'research_type', 'word_count_target', 'guidelines', 'writer_notes', 'deadline', 'keywords', 'status', 'phase', 'completed_at',
     ];
     // workflow_status and friends are deliberately not fillable: they change only through ProjectWorkflow.
@@ -39,6 +39,7 @@ class Project extends Model
     {
         return [
             'degree_level' => DegreeLevel::class,
+            'data_collection' => 'boolean',
             'citation_style' => CitationStyle::class,
             'research_type' => ResearchType::class,
             'workflow_status' => WorkflowStatus::class,

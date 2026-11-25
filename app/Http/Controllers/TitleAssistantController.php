@@ -139,7 +139,7 @@ class TitleAssistantController extends Controller
 
         return match (true) {
             ! $level => redirect()->route('projects.new'),
-            ! $request->user()->canStartProject($level) => redirect()->route('projects.payment'),
+            ! $request->user()->canStartProject($level, (bool) $request->session()->get('wizard.data_collection')) => redirect()->route('projects.payment'),
             default => null,
         };
     }

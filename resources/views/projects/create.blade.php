@@ -67,12 +67,15 @@
 <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Research Type</p>
 <h2 class="font-headline-sm text-headline-sm text-primary">{{ $chosen->label() }}</h2>
 <p class="font-body-sm text-body-sm text-on-surface-variant">{{ $chosen->description() }}</p>
+@if (isset($project) ? $project->data_collection : ($dataCollection ?? false))
+<p class="mt-1 flex items-center gap-1 font-label-sm text-label-sm text-primary"><span class="material-symbols-outlined text-[16px]">fact_check</span>Includes data collection by our team</p>
+@endif
 </div>
 </div>
 @isset($project)
 <span class="flex items-center gap-1 px-3 py-1.5 bg-surface-container-high rounded-lg text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">lock</span>Fixed for this project</span>
 @else
-<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-fixed text-on-tertiary-fixed rounded-lg font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">verified</span>{{ ($payment = auth()->user()->paymentCreditFor($chosen)) ? 'Paid · '.$payment->displayAmount() : 'Included' }}</span>
+<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-fixed text-on-tertiary-fixed rounded-lg font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">verified</span>{{ ($payment = auth()->user()->paymentCreditFor($chosen, $dataCollection)) ? 'Paid · '.$payment->displayAmount() : 'Included' }}</span>
 @endisset
 </div>
 <x-field-error name="degree_level"/>

@@ -32,10 +32,24 @@ return [
     'payments' => [
         'currency' => env('PAYMENT_CURRENCY', 'GHS'),
         'prices' => [
-            'undergraduate' => (float) env('PRICE_UNDERGRADUATE', 300),
-            'mba' => (float) env('PRICE_MBA', 600),
-            'mphil' => (float) env('PRICE_MPHIL', 800),
+            'undergraduate' => (float) env('PRICE_UNDERGRADUATE', 200),
+            'mba' => (float) env('PRICE_MBA', 400),
+            'msc' => (float) env('PRICE_MSC', 450),
+            'mphil' => (float) env('PRICE_MPHIL', 500),
             'phd' => (float) env('PRICE_PHD', 1500),
+            'systematic_review' => (float) env('PRICE_SYSTEMATIC_REVIEW', 100),
+            'research_paper' => (float) env('PRICE_RESEARCH_PAPER', 150),
+        ],
+        // Optional add-on chosen at the start of a project: the team collects the data on the researcher's
+        // behalf. Added to the research type's price above.
+        'data_collection' => [
+            'undergraduate' => (float) env('DATA_COLLECTION_UNDERGRADUATE', 50),
+            'mba' => (float) env('DATA_COLLECTION_MBA', 100),
+            'msc' => (float) env('DATA_COLLECTION_MSC', 100),
+            'mphil' => (float) env('DATA_COLLECTION_MPHIL', 150),
+            'phd' => (float) env('DATA_COLLECTION_PHD', 200),
+            'systematic_review' => (float) env('DATA_COLLECTION_SYSTEMATIC_REVIEW', 50),
+            'research_paper' => (float) env('DATA_COLLECTION_RESEARCH_PAPER', 50),
         ],
     ],
 
