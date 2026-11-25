@@ -2,7 +2,7 @@
 @section('page_title', 'Projects')
 @section('nav', 'projects')
 @section('content')
-<x-admin.header title="Projects" subtitle="Every research project on the platform, with its owner, stage and AI spend."/>
+<x-admin.header title="Projects" subtitle="Every research project on the platform, with its owner, stage, amount charged and AI spend."/>
 
 <form action="{{ route('admin.projects.index') }}" class="flex flex-col md:flex-row md:items-center justify-between gap-4" method="GET">
 <div class="flex flex-wrap gap-2">
@@ -30,9 +30,9 @@
 <div class="p-stack-md"><x-empty icon="folder_off" title="No projects found">Try a different search or filter.</x-empty></div>
 @else
 <div class="overflow-x-auto custom-scrollbar">
-<table class="w-full text-left min-w-[860px]">
+<table class="w-full text-left min-w-[960px]">
 <thead><tr class="bg-surface-container-low border-b border-outline-variant">
-@foreach (['Project', 'Owner', 'Type', 'Papers', 'AI cost', 'Updated', 'Status'] as $h)
+@foreach (['Project', 'Owner', 'Type', 'Charged', 'Papers', 'AI cost', 'Updated', 'Status'] as $h)
 <th class="py-3 px-4 font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant whitespace-nowrap">{{ $h }}</th>
 @endforeach
 </tr></thead>
@@ -45,6 +45,7 @@
 </td>
 <td class="py-3 px-4">@if ($p->user)<a class="hover:underline" href="{{ route('admin.users.show', $p->user) }}">{{ $p->user->name }}</a><p class="text-[12px] text-on-surface-variant">{{ $p->user->email }}</p>@endif</td>
 <td class="py-3 px-4 whitespace-nowrap">{{ $p->degree_level->shortLabel() }}<p class="text-[12px] text-on-surface-variant">{{ $p->research_type->label() }}{{ $p->data_collection ? " · Data collection" : "" }}</p></td>
+<td class="py-3 px-4 tabular-nums whitespace-nowrap">@if ($p->payment)<span class="font-semibold">{{ $p->payment->displayAmount() }}</span>@if ($p->payment->priceDisplay())<p class="text-[12px] text-on-surface-variant">{{ $p->payment->priceDisplay() }}</p>@endif @else<span class="text-on-surface-variant">Not charged</span>@endif</td>
 <td class="py-3 px-4 tabular-nums">{{ $p->papers_count }}</td>
 <td class="py-3 px-4 tabular-nums">${{ number_format((float) $p->ai_cost, 2) }}</td>
 <td class="py-3 px-4 text-on-surface-variant whitespace-nowrap">{{ $p->updated_at->diffForHumans() }}</td>

@@ -151,6 +151,9 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
         Route::post('resume', 'resume')->name('resume');
     });
 
+    Route::get('billing', [Admin\BillingController::class, 'index'])->name('billing');
+    Route::get('billing/export', [Admin\BillingController::class, 'export'])->name('billing.export');
+
     Route::get('payments', [Admin\PaymentController::class, 'index'])->name('payments.index');
     Route::get('payments/export', [Admin\PaymentController::class, 'export'])->name('payments.export');
     Route::post('payments/{payment}/verify', [Admin\PaymentController::class, 'verify'])->name('payments.verify');

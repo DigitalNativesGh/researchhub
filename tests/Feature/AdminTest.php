@@ -33,7 +33,7 @@ it('renders every admin page', function (string $route) {
     };
 
     $this->actingAs($this->admin)->get(route($route, $params))->assertOk();
-})->with(['admin.dashboard', 'admin.users.index', 'admin.users.show', 'admin.projects.index', 'admin.projects.show', 'admin.usage', 'admin.jobs.index', 'admin.activity', 'admin.settings']);
+})->with(['admin.dashboard', 'admin.users.index', 'admin.users.show', 'admin.projects.index', 'admin.projects.show', 'admin.billing', 'admin.usage', 'admin.jobs.index', 'admin.activity', 'admin.settings']);
 
 it('shows the admin link only to administrators', function () {
     $this->actingAs($this->admin)->get(route('dashboard'))->assertSee(route('admin.dashboard'));

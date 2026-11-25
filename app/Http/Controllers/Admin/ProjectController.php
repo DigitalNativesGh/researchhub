@@ -26,7 +26,7 @@ class ProjectController extends Controller
         $like = '%'.mb_strtolower($q).'%';
 
         $projects = Project::query()
-            ->with('user:id,name,email')
+            ->with(['user:id,name,email', 'payment'])
             ->withCount('papers')
             ->withSum('aiCalls as ai_cost', 'cost')
             ->when($q !== '', fn ($query) => $query->where(fn ($w) => $w

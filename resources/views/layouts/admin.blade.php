@@ -10,6 +10,7 @@
         ['queue', 'inbox', 'Work Queue', route('admin.queue'), $queueCount ?: null],
         ['users', 'group', 'Users', route('admin.users.index'), null],
         ['projects', 'folder_shared', 'Projects', route('admin.projects.index'), null],
+        ['billing', 'receipt_long', 'Billing by Researcher', route('admin.billing'), null],
         ['payments', 'payments', 'Payments', route('admin.payments.index'), null],
         ['usage', 'data_usage', 'AI Usage & Cost', route('admin.usage'), null],
         ['jobs', 'error_med', 'Failed Jobs', route('admin.jobs.index'), $failedJobs ?: null],
