@@ -60,7 +60,7 @@
 @if ($paid)
 <span class="inline-flex items-center gap-1 px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded text-[11px] font-bold uppercase tracking-wider whitespace-nowrap"><span class="material-symbols-outlined text-[14px]">verified</span>Paid</span>
 @elseif ($prices[$level->value] > 0)
-<p class="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap">{{ \App\Models\Payment::format($prices[$level->value]) }}</p>
+<p class="font-headline-sm text-headline-sm text-primary font-bold whitespace-nowrap">{{ \App\Models\Payment::formatPrice($prices[$level->value]) }}</p>
 @else
 <p class="font-headline-sm text-headline-sm text-primary font-bold">Free</p>
 @endif
@@ -68,7 +68,7 @@
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-3">{{ $level->description() }}</p>
 @if ($dataCollectionPrices[$level->value] > 0)
-<p class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant mb-3"><span class="material-symbols-outlined text-[16px]">add_circle</span>Data collection: {{ \App\Models\Payment::format($dataCollectionPrices[$level->value]) }} extra, optional</p>
+<p class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant mb-3"><span class="material-symbols-outlined text-[16px]">add_circle</span>Data collection: {{ \App\Models\Payment::formatPrice($dataCollectionPrices[$level->value]) }} extra, optional</p>
 @endif
 <div class="flex flex-wrap items-center justify-between gap-2">
 <span class="inline-block px-2 py-1 bg-surface-container-high rounded text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Typical length · {{ $level->typicalRange() }}</span>
@@ -101,7 +101,7 @@
 </form>
 <script>
   (() => {
-    const prices = @json($dataCollectionPrices->map(fn ($p) => $p > 0 ? '+ '.\App\Models\Payment::format($p) : 'Free'));
+    const prices = @json($dataCollectionPrices->map(fn ($p) => $p > 0 ? '+ '.\App\Models\Payment::formatPrice($p) : 'Free'));
     const label = document.getElementById('data-collection-price');
     const update = () => {
       const chosen = document.querySelector('input[name="degree_level"]:checked');

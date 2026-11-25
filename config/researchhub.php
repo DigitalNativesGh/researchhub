@@ -26,11 +26,17 @@ return [
     'horizon_admins' => env('HORIZON_ADMINS', ''),
 
     /*
-    | What a student pays to start a project, by research type, in the major unit of the currency (e.g. cedis).
+    | What a student pays to start a project, by research type, in the major unit of the price currency (US dollars),
+    | converted to the billing currency (cedis) at the exchange rate when they check out.
     | Administrators can change these under Admin → Platform Settings. A price of 0 makes that type free.
     */
     'payments' => [
+        // Billing currency: what Paystack charges in.
         'currency' => env('PAYMENT_CURRENCY', 'GHS'),
+        // Prices below are set and shown in this currency, then converted to the billing currency at checkout.
+        'price_currency' => env('PRICE_CURRENCY', 'USD'),
+        // Billing currency units per one unit of the price currency (GHS per USD). Admins change it in Platform Settings.
+        'exchange_rate' => (float) env('EXCHANGE_RATE', 11.5),
         'prices' => [
             'undergraduate' => (float) env('PRICE_UNDERGRADUATE', 200),
             'mba' => (float) env('PRICE_MBA', 400),

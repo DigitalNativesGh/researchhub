@@ -75,7 +75,7 @@
 @isset($project)
 <span class="flex items-center gap-1 px-3 py-1.5 bg-surface-container-high rounded-lg text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">lock</span>Fixed for this project</span>
 @else
-<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-fixed text-on-tertiary-fixed rounded-lg font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">verified</span>{{ ($payment = auth()->user()->paymentCreditFor($chosen, $dataCollection)) ? 'Paid · '.$payment->displayAmount() : 'Included' }}</span>
+<span class="flex items-center gap-1 px-3 py-1.5 bg-tertiary-fixed text-on-tertiary-fixed rounded-lg font-label-sm text-label-sm whitespace-nowrap"><span class="material-symbols-outlined text-[16px]">verified</span>{{ ($payment = auth()->user()->paymentCreditFor($chosen, $dataCollection)) ? 'Paid · '.$payment->fullAmount() : 'Included' }}</span>
 @endisset
 </div>
 <x-field-error name="degree_level"/>

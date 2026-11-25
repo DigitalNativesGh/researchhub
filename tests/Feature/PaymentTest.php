@@ -26,8 +26,8 @@ function paystackTransaction(Payment $payment, array $overrides = []): array
 
 it('shows prices on the research type step', function () {
     $this->get(route('projects.new'))->assertOk()
-        ->assertSee('GHS 200')->assertSee('GHS 400')->assertSee('GHS 450')->assertSee('GHS 500')->assertSee('GHS 1,500')
-        ->assertSee('Systematic Review')->assertSee('GHS 100')->assertSee('Research Paper')->assertSee('GHS 150')
+        ->assertSee('$200')->assertSee('$400')->assertSee('$450')->assertSee('$500')->assertSee('$1,500')
+        ->assertSee('Systematic Review')->assertSee('$100')->assertSee('Research Paper')->assertSee('$150')
         ->assertSee('I need data collection done on my behalf');
 });
 
@@ -36,7 +36,7 @@ it('requires payment before the details step', function () {
 
     $this->get(route('projects.create'))->assertRedirect(route('projects.payment'));
     $this->get(route('title-assistant'))->assertRedirect(route('projects.payment'));
-    $this->get(route('projects.payment'))->assertOk()->assertSee('PhD Thesis')->assertSee('GHS 1,500')->assertSee('Mobile Money')->assertSee('Mastercard');
+    $this->get(route('projects.payment'))->assertOk()->assertSee('PhD Thesis')->assertSee('$1,500')->assertSee('GHS 17,250')->assertSee('1 USD = 11.5 GHS')->assertSee('Mobile Money')->assertSee('Mastercard');
 
     $this->post(route('projects.store'), ['title' => 'A sufficiently long project title', 'discipline' => 'Education', 'degree_level' => 'phd', 'research_type' => 'mixed', 'citation_style' => 'apa7'])
         ->assertRedirect(route('projects.payment'));
@@ -52,11 +52,12 @@ it('pays on Paystack and continues to the details step', function () {
     $this->post(route('projects.payment.store'))->assertRedirect('https://checkout.paystack.com/abc123');
 
     $payment = Payment::sole();
-    expect($payment->status)->toBe('pending')->and($payment->amount)->toBe(40000)->and($payment->currency)->toBe('GHS');
+    expect($payment->status)->toBe('pending')->and($payment->amount)->toBe(460000)->and($payment->currency)->toBe('GHS')
+        ->and($payment->price_amount)->toBe(40000)->and($payment->price_currency)->toBe('USD')->and($payment->exchange_rate)->toBe(11.5);
 
     Http::assertSent(fn (Request $r) => $r->url() === 'https://api.paystack.co/transaction/initialize'
         && $r->hasHeader('Authorization', 'Bearer sk_test_secret')
-        && $r['amount'] === 40000 && $r['email'] === 'ama.mensah@ug.edu.gh' && $r['channels'] === ['card', 'mobile_money']
+        && $r['amount'] === 460000 && $r['email'] === 'ama.mensah@ug.edu.gh' && $r['channels'] === ['card', 'mobile_money']
         && $r['callback_url'] === route('payments.callback') && $r['reference'] === $payment->reference);
 
     Http::fake(["api.paystack.co/transaction/verify/{$payment->reference}" => Http::response(['status' => true, 'data' => paystackTransaction($payment)])]);
@@ -66,7 +67,7 @@ it('pays on Paystack and continues to the details step', function () {
 
     $payment->refresh();
     expect($payment->isSuccessful())->toBeTrue()->and($payment->methodLabel())->toBe('Mobile Money (MTN)');
-    $this->get(route('projects.create'))->assertOk()->assertSee('Paid · GHS 400');
+    $this->get(route('projects.create'))->assertOk()->assertSee('Paid · $400 (GHS 4,600)');
 
     // The payment is used by exactly one project.
     $details = ['title' => 'Strategic agility in Ghanaian SMEs', 'discipline' => 'Business & Economics', 'degree_level' => 'mba', 'research_type' => 'quantitative', 'citation_style' => 'apa7'];
@@ -128,12 +129,12 @@ it('adds the data collection add-on to the price and records it on the project',
     ]);
 
     $this->post(route('projects.new.store'), ['degree_level' => 'phd', 'data_collection' => '1'])->assertRedirect(route('projects.payment'));
-    $this->get(route('projects.payment'))->assertOk()->assertSee('Data collection on your behalf')->assertSee('GHS 200')->assertSee('Pay GHS 1,700');
+    $this->get(route('projects.payment'))->assertOk()->assertSee('Data collection on your behalf')->assertSee('$200')->assertSee('$1,700')->assertSee('Pay GHS 19,550');
 
     $this->post(route('projects.payment.store'))->assertRedirect('https://checkout.paystack.com/dc1');
     $payment = Payment::sole();
-    expect($payment->amount)->toBe(170000)->and($payment->data_collection)->toBeTrue();
-    Http::assertSent(fn (Request $r) => $r['amount'] === 170000);
+    expect($payment->amount)->toBe(1955000)->and($payment->data_collection)->toBeTrue();
+    Http::assertSent(fn (Request $r) => $r['amount'] === 1955000);
 
     Http::fake(["api.paystack.co/transaction/verify/{$payment->reference}" => Http::response(['status' => true, 'data' => paystackTransaction($payment)])]);
     $this->get(route('payments.callback', ['reference' => $payment->reference]))->assertRedirect(route('projects.create'));
@@ -147,7 +148,7 @@ it('does not use a credit paid without data collection for a project with it', f
     $this->user->payments()->create(['degree_level' => 'msc', 'amount' => 45000, 'currency' => 'GHS', 'reference' => 'RH-MSC', 'status' => 'success']);
 
     $this->post(route('projects.new.store'), ['degree_level' => 'msc', 'data_collection' => '1'])->assertRedirect(route('projects.payment'));
-    $this->get(route('projects.payment'))->assertOk()->assertSee('Pay GHS 550');
+    $this->get(route('projects.payment'))->assertOk()->assertSee('Pay GHS 6,325');
 
     $this->post(route('projects.new.store'), ['degree_level' => 'msc', 'data_collection' => '0'])->assertRedirect(route('projects.create'));
 });
@@ -169,14 +170,39 @@ it('lets administrators set prices, including free', function () {
 
     $this->actingAs($admin)->put(route('admin.settings.update'), [
         'registration_open' => '1', 'announcement_level' => 'info', 'title_suggestions_per_hour' => 20, 'paper_max_count' => 40, 'min_sources' => 1,
-        'price_undergraduate' => 0, 'price_mba' => 650.5, 'price_msc' => 450, 'price_mphil' => 800, 'price_phd' => 1500, 'price_systematic_review' => 100, 'price_research_paper' => 150,
+        'exchange_rate' => 11.5, 'price_undergraduate' => 0, 'price_mba' => 650.5, 'price_msc' => 450, 'price_mphil' => 800, 'price_phd' => 1500, 'price_systematic_review' => 100, 'price_research_paper' => 150,
         'data_collection_undergraduate' => 0, 'data_collection_mba' => 100, 'data_collection_msc' => 100, 'data_collection_mphil' => 150, 'data_collection_phd' => 200, 'data_collection_systematic_review' => 50, 'data_collection_research_paper' => 50,
     ])->assertSessionHasNoErrors();
 
     expect(Payment::priceFor(DegreeLevel::Mba))->toBe(650.5);
 
-    $this->actingAs($this->user)->get(route('projects.new'))->assertSee('GHS 650.50')->assertSee('Free');
+    $this->actingAs($this->user)->get(route('projects.new'))->assertSee('$650.50')->assertSee('Free');
     $this->post(route('projects.new.store'), ['degree_level' => 'undergraduate'])->assertRedirect(route('projects.create'));
+});
+
+it('charges in cedis at the exchange rate the administrator sets', function () {
+    Http::fake([
+        'api.paystack.co/transaction/initialize' => Http::response(['status' => true, 'data' => ['authorization_url' => 'https://checkout.paystack.com/fx', 'reference' => 'x']]),
+    ]);
+    expect(Payment::exchangeRate())->toBe(11.5);
+
+    $admin = User::factory()->create();
+    $admin->forceFill(['is_admin' => true])->save();
+    $this->actingAs($admin)->get(route('admin.settings'))->assertOk()->assertSee('Exchange rate (GHS per 1 USD)');
+    $this->put(route('admin.settings.update'), array_merge(
+        collect(\App\Models\Setting::values())->filter(fn ($v) => $v !== null)->map(fn ($v) => is_bool($v) ? (int) $v : $v)->all(),
+        ['exchange_rate' => 12.25],
+    ))->assertSessionHasNoErrors();
+    expect(Payment::exchangeRate())->toBe(12.25);
+
+    // MBA at $400: GHS 4,900 at the new rate.
+    $this->actingAs($this->user)->post(route('projects.new.store'), ['degree_level' => 'mba']);
+    $this->get(route('projects.payment'))->assertOk()->assertSee('$400')->assertSee('Pay GHS 4,900')->assertSee('1 USD = 12.25 GHS');
+    $this->post(route('projects.payment.store'));
+
+    $payment = Payment::sole();
+    expect($payment->amount)->toBe(490000)->and($payment->exchange_rate)->toBe(12.25)->and($payment->fullAmount())->toBe('$400 (GHS 4,900)');
+    Http::assertSent(fn (Request $r) => $r['amount'] === 490000 && $r['currency'] === 'GHS');
 });
 
 it('keeps the paid research type fixed on edit', function () {

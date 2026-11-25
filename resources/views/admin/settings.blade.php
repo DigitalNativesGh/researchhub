@@ -27,9 +27,15 @@
 <option @selected($value === $option) value="{{ $option }}">{{ ucfirst($option) }}</option>
 @endforeach
 </select>
+@elseif ($type === 'rate')
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface-variant whitespace-nowrap">1 {{ \App\Models\Payment::priceCurrency() }} =</span>
+<input class="w-full md:w-40 px-4 py-3 border border-outline-variant rounded-lg bg-surface-container-low focus:ring-2 focus:ring-primary/10 focus:border-primary" id="{{ $key }}" min="0.0001" name="{{ $key }}" step="0.0001" type="number" value="{{ $value }}"/>
+<span class="font-label-md text-label-md text-on-surface-variant">{{ \App\Models\Payment::currency() }}</span>
+</div>
 @elseif ($type === 'decimal')
 <div class="flex items-center gap-2">
-<span class="font-label-md text-label-md text-on-surface-variant">{{ \App\Models\Payment::currency() }}</span>
+<span class="font-label-md text-label-md text-on-surface-variant">{{ \App\Models\Payment::priceCurrency() }}</span>
 <input class="w-full md:w-40 px-4 py-3 border border-outline-variant rounded-lg bg-surface-container-low focus:ring-2 focus:ring-primary/10 focus:border-primary" id="{{ $key }}" min="0" name="{{ $key }}" step="0.01" type="number" value="{{ $value }}"/>
 </div>
 @else

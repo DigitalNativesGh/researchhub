@@ -16,9 +16,10 @@
 <p class="text-[11px] uppercase tracking-wider text-on-surface-variant font-bold mb-2">Current prices</p>
 <ul class="space-y-1 font-body-sm text-body-sm">
 @foreach (\App\Enums\DegreeLevel::cases() as $level)
-<li class="flex justify-between gap-2"><span class="text-on-surface-variant">{{ $level->shortLabel() }}</span><span class="text-primary font-semibold" title="Data collection add-on">{{ $prices[$level->value] > 0 ? $fmt($prices[$level->value]) : 'Free' }}<span class="text-[12px] text-on-surface-variant font-normal"> +{{ $fmt(\App\Models\Payment::dataCollectionPriceFor($level)) }}</span></span><span class="text-[12px] text-on-surface-variant">{{ $byLevel[$level->value]->payments ?? 0 }} paid</span></li>
+<li class="flex justify-between gap-2"><span class="text-on-surface-variant">{{ $level->shortLabel() }}</span><span class="text-primary font-semibold" title="Data collection add-on">{{ $prices[$level->value] > 0 ? \App\Models\Payment::formatPrice($prices[$level->value]) : 'Free' }}<span class="text-[12px] text-on-surface-variant font-normal"> +{{ \App\Models\Payment::formatPrice(\App\Models\Payment::dataCollectionPriceFor($level)) }}</span></span><span class="text-[12px] text-on-surface-variant">{{ $byLevel[$level->value]->payments ?? 0 }} paid</span></li>
 @endforeach
 </ul>
+<p class="mt-2 text-[12px] text-on-surface-variant">Charged in {{ \App\Models\Payment::currency() }} at {{ \App\Models\Payment::formatRate() }} · <a class="text-secondary hover:underline" href="{{ route('admin.settings') }}">Change</a></p>
 </div>
 </div>
 
@@ -52,7 +53,7 @@
 <td class="py-3 px-4 text-on-surface-variant whitespace-nowrap">{{ $payment->created_at->format('M j, Y H:i') }}</td>
 <td class="py-3 px-4">@if ($payment->user)<a class="text-primary hover:underline" href="{{ route('admin.users.show', $payment->user) }}">{{ $payment->user->name }}</a><p class="text-[12px] text-on-surface-variant">{{ $payment->user->email }}</p>@endif</td>
 <td class="py-3 px-4 whitespace-nowrap">{{ $payment->degree_level->shortLabel() }}@if ($payment->data_collection)<p class="text-[12px] text-on-surface-variant">+ Data collection</p>@endif</td>
-<td class="py-3 px-4 tabular-nums whitespace-nowrap font-semibold">{{ $payment->displayAmount() }}</td>
+<td class="py-3 px-4 tabular-nums whitespace-nowrap font-semibold">{{ $payment->displayAmount() }}@if ($payment->priceDisplay())<p class="text-[12px] text-on-surface-variant font-normal">{{ $payment->priceDisplay() }} @ {{ rtrim(rtrim(number_format($payment->exchange_rate, 4), "0"), ".") }}</p>@endif</td>
 <td class="py-3 px-4 whitespace-nowrap">{{ $payment->methodLabel() }}</td>
 <td class="py-3 px-4 font-mono text-[12px]">{{ $payment->reference }}</td>
 <td class="py-3 px-4">@if ($payment->project)<a class="text-primary hover:underline" href="{{ route('admin.projects.show', $payment->project) }}">{{ Str::limit($payment->project->title, 30) }}</a>@elseif ($payment->consumed_at)<span class="text-on-surface-variant">Project deleted</span>@elseif ($payment->isSuccessful())<span class="text-on-surface-variant">Unused credit</span>@endif</td>

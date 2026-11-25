@@ -62,7 +62,7 @@
 @foreach ($payments as $payment)
 <li class="px-stack-md py-3 flex items-center justify-between gap-4">
 <div class="min-w-0">
-<p class="font-label-md text-label-md text-on-surface">{{ $payment->displayAmount() }} · {{ $payment->degree_level->shortLabel() }}</p>
+<p class="font-label-md text-label-md text-on-surface">{{ $payment->fullAmount() }} · {{ $payment->degree_level->shortLabel() }}</p>
 <p class="text-[12px] text-on-surface-variant truncate">{{ $payment->reference }} · {{ $payment->methodLabel() }} · {{ $payment->created_at->format('M j, Y') }} · {{ $payment->project ? Str::limit($payment->project->title, 40) : ($payment->consumed_at ? 'Project deleted' : ($payment->isSuccessful() ? 'Unused credit' : '')) }}</p>
 </div>
 @include('admin.payments._status', ['payment' => $payment])

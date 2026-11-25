@@ -54,22 +54,28 @@
 <li class="flex gap-2"><span class="material-symbols-outlined text-[18px] text-primary">check</span>Word or PDF downloads, with progress tracking at every stage</li>
 </ul>
 <dl class="py-5 space-y-2 font-body-sm text-body-sm border-b border-outline-variant">
-<div class="flex justify-between gap-4"><dt class="text-on-surface-variant">{{ $level->label() }}</dt><dd class="text-on-surface">{{ \App\Models\Payment::format($price, $currency) }}</dd></div>
+<div class="flex justify-between gap-4"><dt class="text-on-surface-variant">{{ $level->label() }}</dt><dd class="text-on-surface">{{ \App\Models\Payment::formatPrice($price) }}</dd></div>
 @if ($dataCollection)
-<div class="flex justify-between gap-4"><dt class="text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[18px] text-primary">fact_check</span>Data collection on your behalf</dt><dd class="text-on-surface">{{ $dataCollectionPrice > 0 ? \App\Models\Payment::format($dataCollectionPrice, $currency) : 'Free' }}</dd></div>
+<div class="flex justify-between gap-4"><dt class="text-on-surface-variant flex items-center gap-1"><span class="material-symbols-outlined text-[18px] text-primary">fact_check</span>Data collection on your behalf</dt><dd class="text-on-surface">{{ $dataCollectionPrice > 0 ? \App\Models\Payment::formatPrice($dataCollectionPrice) : 'Free' }}</dd></div>
 @endif
 </dl>
 <p class="pt-3 font-body-sm text-body-sm text-on-surface-variant">
 @if ($dataCollection)
 Our team will collect your data for you. <a class="text-secondary hover:underline" href="{{ route('projects.new') }}">Remove data collection</a>
 @else
-Need us to collect your data? <a class="text-secondary hover:underline" href="{{ route('projects.new') }}">Add data collection{{ $dataCollectionPrice > 0 ? ' (+'.\App\Models\Payment::format($dataCollectionPrice, $currency).')' : '' }}</a>
+Need us to collect your data? <a class="text-secondary hover:underline" href="{{ route('projects.new') }}">Add data collection{{ $dataCollectionPrice > 0 ? ' (+'.\App\Models\Payment::formatPrice($dataCollectionPrice).')' : '' }}</a>
 @endif
 </p>
 <div class="pt-5 flex items-end justify-between">
 <span class="font-label-md text-label-md text-on-surface">Total due</span>
-<span class="font-headline-lg text-headline-lg text-primary font-bold">{{ \App\Models\Payment::format($total, $currency) }}</span>
+<span class="font-headline-lg text-headline-lg text-primary font-bold">{{ \App\Models\Payment::formatPrice($total) }}</span>
 </div>
+@if ($converted)
+<div class="mt-3 p-3 rounded-lg bg-surface-container-low flex items-start justify-between gap-4 font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Charged in cedis on Paystack<span class="block text-[12px]">{{ \App\Models\Payment::formatRate() }}</span></span>
+<span class="font-semibold text-on-surface whitespace-nowrap">{{ \App\Models\Payment::format($charge, $currency) }}</span>
+</div>
+@endif
 </section>
 
 <!-- Payment -->
@@ -109,7 +115,7 @@ Need us to collect your data? <a class="text-secondary hover:underline" href="{{
 @csrf
 <button class="w-full bg-primary text-on-primary px-8 py-4 rounded-lg font-label-md text-label-md hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/10 disabled:opacity-60" type="submit">
 <span class="material-symbols-outlined">lock</span>
-<span data-label>Pay {{ \App\Models\Payment::format($total, $currency) }}</span>
+<span data-label>Pay {{ \App\Models\Payment::format($charge, $currency) }}{{ $converted ? ' ('.\App\Models\Payment::formatPrice($total).')' : '' }}</span>
 </button>
 </form>
 @else

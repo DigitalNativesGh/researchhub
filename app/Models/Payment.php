@@ -13,7 +13,7 @@ class Payment extends Model
     public const SUCCESS = 'success';
 
     protected $fillable = [
-        'user_id', 'project_id', 'degree_level', 'data_collection', 'amount', 'currency', 'reference', 'status', 'channel', 'card_type',
+        'user_id', 'project_id', 'degree_level', 'data_collection', 'amount', 'currency', 'price_amount', 'price_currency', 'exchange_rate', 'reference', 'status', 'channel', 'card_type',
         'last4', 'gateway_response', 'paystack_id', 'paid_at', 'consumed_at',
     ];
 
@@ -23,6 +23,8 @@ class Payment extends Model
             'degree_level' => DegreeLevel::class,
             'data_collection' => 'boolean',
             'amount' => 'integer',
+            'price_amount' => 'integer',
+            'exchange_rate' => 'float',
             'paystack_id' => 'integer',
             'paid_at' => 'datetime',
             'consumed_at' => 'datetime',
@@ -57,14 +59,47 @@ class Payment extends Model
         return self::priceFor($level) + ($dataCollection ? self::dataCollectionPriceFor($level) : 0);
     }
 
+    /** The currency Paystack charges in (billing), e.g. GHS. Revenue and payment amounts are in this currency. */
     public static function currency(): string
     {
         return strtoupper((string) config('researchhub.payments.currency', 'GHS'));
     }
 
+    /** The currency prices are set and shown in, e.g. USD. Converted to the billing currency at checkout. */
+    public static function priceCurrency(): string
+    {
+        return strtoupper((string) config('researchhub.payments.price_currency', 'USD'));
+    }
+
+    /** Units of the billing currency per one unit of the price currency (e.g. 11.5 GHS per USD). */
+    public static function exchangeRate(): float
+    {
+        return self::priceCurrency() === self::currency() ? 1.0 : (float) config('researchhub.payments.exchange_rate', 1);
+    }
+
+    /** A price (price currency) converted to the amount charged (billing currency), rounded to the minor unit. */
+    public static function toBilling(float $price): float
+    {
+        return round($price * self::exchangeRate(), 2);
+    }
+
     public static function format(float $amount, ?string $currency = null): string
     {
-        return ($currency ?? self::currency()).' '.number_format($amount, fmod($amount, 1) ? 2 : 0);
+        $currency ??= self::currency();
+        $number = number_format($amount, fmod($amount, 1) ? 2 : 0);
+
+        return $currency === 'USD' ? '$'.$number : $currency.' '.$number;
+    }
+
+    /** A price in the price currency, e.g. "$200". */
+    public static function formatPrice(float $amount): string
+    {
+        return self::format($amount, self::priceCurrency());
+    }
+
+    public static function formatRate(): string
+    {
+        return '1 '.self::priceCurrency().' = '.rtrim(rtrim(number_format(self::exchangeRate(), 4), '0'), '.').' '.self::currency();
     }
 
     public static function newReference(): string
@@ -91,6 +126,20 @@ class Payment extends Model
     public function displayAmount(): string
     {
         return self::format($this->amountMajor(), $this->currency);
+    }
+
+    /** The price the researcher saw (e.g. "$200"), when it differs from the billing currency. */
+    public function priceDisplay(): ?string
+    {
+        return $this->price_amount !== null && $this->price_currency && $this->price_currency !== $this->currency
+            ? self::format($this->price_amount / 100, $this->price_currency)
+            : null;
+    }
+
+    /** "$200 (GHS 2,300)", or just the charged amount. */
+    public function fullAmount(): string
+    {
+        return ($price = $this->priceDisplay()) ? "{$price} ({$this->displayAmount()})" : $this->displayAmount();
     }
 
     /** "Mobile Money (MTN)", "Visa •••• 4081" */

@@ -36,7 +36,10 @@ class PaymentController extends Controller
             'dataCollection' => $dataCollection,
             'dataCollectionPrice' => Payment::dataCollectionPriceFor($level),
             'total' => Payment::totalFor($level, $dataCollection),
+            // What Paystack will charge, in cedis at the current exchange rate.
+            'charge' => Payment::toBilling(Payment::totalFor($level, $dataCollection)),
             'currency' => Payment::currency(),
+            'converted' => Payment::priceCurrency() !== Payment::currency(),
             'configured' => $paystack->configured(),
             'channels' => config('services.paystack.channels'),
         ]);
@@ -60,11 +63,16 @@ class PaymentController extends Controller
             return back()->with('error', self::EMAIL_MESSAGE);
         }
 
+        // Priced in dollars, charged in cedis; the payment keeps the rate it was created with.
+        $price = Payment::totalFor($level, $dataCollection);
         $payment = $user->payments()->create([
             'degree_level' => $level,
             'data_collection' => $dataCollection,
-            'amount' => (int) round(Payment::totalFor($level, $dataCollection) * 100),
+            'amount' => (int) round(Payment::toBilling($price) * 100),
             'currency' => Payment::currency(),
+            'price_amount' => (int) round($price * 100),
+            'price_currency' => Payment::priceCurrency(),
+            'exchange_rate' => Payment::exchangeRate(),
             'reference' => Payment::newReference(),
             'status' => 'pending',
         ]);
@@ -76,6 +84,7 @@ class PaymentController extends Controller
                 'custom_fields' => [
                     ['display_name' => 'Research type', 'variable_name' => 'research_type', 'value' => $level->label()],
                     ['display_name' => 'Data collection', 'variable_name' => 'data_collection', 'value' => $dataCollection ? 'Yes' : 'No'],
+                    ['display_name' => 'Price', 'variable_name' => 'price', 'value' => Payment::formatPrice($price).' at '.Payment::formatRate()],
                     ['display_name' => 'Customer', 'variable_name' => 'customer_name', 'value' => $user->name],
                 ],
             ]);
@@ -111,7 +120,7 @@ class PaymentController extends Controller
             return redirect()->route('projects.payment')->with('error', 'The payment was not completed'.($payment->gateway_response ? ' ('.$payment->gateway_response.')' : '').'. You have not been charged; please try again.');
         }
 
-        return redirect()->route('projects.create')->with('status', "Payment of {$payment->displayAmount()} received. Now give your project a title and details.");
+        return redirect()->route('projects.create')->with('status', "Payment of {$payment->fullAmount()} received. Now give your project a title and details.");
     }
 
     /** Signed server-to-server notification; confirms payments even if the student closes the tab. */
